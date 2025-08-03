@@ -5,10 +5,10 @@ const RecipeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  ingredients: { type: String, required: true },
+  ingredients: { type: Array, required: true },
 
   instructions: { type: String, required: true },
-  coverImage: { type: String, required: false },
+  coverImage: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

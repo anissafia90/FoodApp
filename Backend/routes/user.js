@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/UserSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const verifyToken = require("../middleware/auth");
 
 router.post("/register", async (req, res) => {
   const { email, password } = req.body;
@@ -18,12 +19,16 @@ router.post("/register", async (req, res) => {
   const newUser = new User({ email, password: hashedPassword });
   await newUser.save();
 
-  let token = jwt.sign({ email, id: newUser._id }, process.env.SECRET_KEY, {
-    expiresIn: "1h",
-  });
-  res
+  let token = jwt.sign(
+    { email, id: newUser._id },
+    `${process.env.SECRET_KEY}`,
+    {
+      expiresIn: "1h",
+    }
+  );
+  return res
     .status(201)
-    .json({ message: "User registered successfully", token, newUser });
+    .json({ message: "User registered successfully", token, user: newUser });
 });
 
 router.post("/signin", async (req, res) => {
@@ -34,14 +39,50 @@ router.post("/signin", async (req, res) => {
   let user = await User.findOne({ email });
 
   if (user && (await bcrypt.compare(password, user.password))) {
-    let token = jwt.sign({ email, id: user._id }, process.env.SECRET_KEY, {
+    let token = jwt.sign({ email, id: user._id }, `${process.env.SECRET_KEY}`, {
       expiresIn: "1h",
     });
-    res
+    return res
       .status(200)
       .json({ message: "User signed in successfully", token, user });
   } else {
     res.status(400).json({ message: "Invalid email or password" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  res.status(200).json(user);
+});
+
+router.put("/favorite/:id", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const recipeId = req.params.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.favorites) {
+      user.favorites = [];
+    }
+
+    if (user.favorites.includes(recipeId)) {
+      user.favorites.pull(recipeId);
+    } else {
+      user.favorites.push(recipeId);
+    }
+
+    await user.save();
+    res.json({ favourites: user.favorites });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

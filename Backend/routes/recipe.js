@@ -1,16 +1,33 @@
 const express = require("express");
-const Recipe = require("../models/RecipeSchema");
+const Recipe = require("../models/RecipeSchema"); // Assuming you have a Recipe model defined
 const router = express.Router();
+const multer = require("multer");
+const verifyToken = require("../middleware/auth"); // Assuming you have an auth middleware for token verification
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "./public/images"); // Change this to your desired upload directory
+  },
+  filename: function (req, file, cb) {
+    const filename = Date.now() + "-" + file.fieldname;
+    cb(null, filename);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 router.get("/", async (req, res) => {
   try {
     const recipes = await Recipe.find();
     res.status(200).json(recipes);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
-router.post("/", async (req, res) => {
+
+router.post("/", upload.single("coverImage"), verifyToken, async (req, res) => {
+  console.log(req.user);
   const { title, ingredients, instructions } = req.body;
   if (!title || !ingredients || !instructions) {
     return res.status(400).json({ error: "All fields are required" });
@@ -19,14 +36,10 @@ router.post("/", async (req, res) => {
     title,
     ingredients,
     instructions,
+    coverImage: req.file?.filename,
+    createdBy: req.user.id, // Assuming req.user contains the authenticated user's ID
   });
-
-  newRecipe
-    .save()
-    .then(() =>
-      res.status(201).json({ message: "Recipe created successfully" })
-    )
-    .catch((err) => res.status(500).json({ error: err.message }));
+  res.status(201).json(newRecipe);
 });
 
 router.get("/:id", async (req, res) => {
@@ -37,15 +50,15 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Recipe not found" });
     }
     res.status(200).json(recipe);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", upload.single("coverImage"), async (req, res) => {
   const { id } = req.params;
   const { title, ingredients, instructions } = req.body;
-
   try {
     const updatedRecipe = await Recipe.findByIdAndUpdate(
       id,
@@ -53,29 +66,34 @@ router.put("/:id", async (req, res) => {
         title,
         ingredients,
         instructions,
+        coverImage: req.file?.filename,
       },
       { new: true, runValidators: true }
     );
+
     if (!updatedRecipe) {
       return res.status(404).json({ error: "Recipe not found" });
     }
-    res
-      .status(200)
-      .json({ message: "Recipe updated successfully", recipe: updatedRecipe });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(200).json(updatedRecipe);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 router.delete("/:id", async (req, res) => {
   const { id } = req.params;
+
   try {
-    const deletedRecipe = await Recipe.findByIdAndDelete(id);
-    if (!deletedRecipe) {
+    const deletedRecepie = await Recipe.findByIdAndDelete(id);
+    if (!deletedRecepie) {
       return res.status(404).json({ error: "Recipe not found" });
     }
     res.status(200).json({ message: "Recipe deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 module.exports = router;
