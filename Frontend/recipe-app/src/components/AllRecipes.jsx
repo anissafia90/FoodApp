@@ -8,16 +8,19 @@ function AllRecipes() {
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      const res = await axios.get("http://localhost:5000/recipe");
+      const res = await axios.get("https://foodapp-08ud.onrender.com/recipe");
       setRecipes(res.data);
     };
 
     const fetchFavorites = async () => {
-      const res = await axios.get("http://localhost:5000/user/favorites", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const res = await axios.get(
+        "https://foodapp-08ud.onrender.com/user/favorites",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       setFavorites(res.data.favorites);
     };
 
@@ -28,7 +31,7 @@ function AllRecipes() {
   const toggleFavorite = async (recipeId) => {
     try {
       const res = await axios.put(
-        `http://localhost:5000/user/favorite/${recipeId}`,
+        `https://foodapp-08ud.onrender.com/user/favorite/${recipeId}`,
         null,
         {
           headers: {
@@ -53,7 +56,7 @@ function AllRecipes() {
             <div className="recipe-card" key={recipe._id}>
               <img
                 className="w-100"
-                src={`http://localhost:5000/public/images/${recipe.coverImage}`}
+                src={`https://foodapp-08ud.onrender.com/public/images/${recipe.coverImage}`}
                 alt={recipe.title}
               />
               <h4 className="mt-4">{recipe.title}</h4>

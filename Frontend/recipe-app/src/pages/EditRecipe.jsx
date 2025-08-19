@@ -10,15 +10,17 @@ function EditRecipe() {
 
   useEffect(() => {
     const getRecipe = async () => {
-      await axios.get(`http://localhost:5000/recipe/${id}`).then((response) => {
-        let res = response.data;
-        setRecipe({
-          title: res.title,
-          ingredients: res.ingredients.join(","),
-          instructions: res.instructions,
-          coverImage: res.coverImage ? res.coverImage : null, // Handle case where coverImage might be null
+      await axios
+        .get(`https://foodapp-08ud.onrender.com/recipe/${id}`)
+        .then((response) => {
+          let res = response.data;
+          setRecipe({
+            title: res.title,
+            ingredients: res.ingredients.join(","),
+            instructions: res.instructions,
+            coverImage: res.coverImage ? res.coverImage : null, // Handle case where coverImage might be null
+          });
         });
-      });
     };
     getRecipe();
   }, []);
@@ -48,12 +50,16 @@ function EditRecipe() {
         formData.append("coverImage", recipe.coverImage);
       }
       console.log("Sending recipe data:", recipe);
-      await axios.put(`http://localhost:5000/recipe/${id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await axios.put(
+        `https://foodapp-08ud.onrender.com/recipe/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       navigate("/");
     } catch (error) {
       console.error("Error adding recipe:", error);

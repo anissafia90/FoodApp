@@ -32,7 +32,7 @@ function AddRecipes() {
         formData.append("coverImage", recipe.coverImage);
       }
       console.log("Sending recipe data:", recipe);
-      await axios.post("http://localhost:5000/recipe/", formData, {
+      await axios.post("https://foodapp-08ud.onrender.com/recipe/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,

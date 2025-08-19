@@ -11,7 +11,9 @@ function MyRecipes() {
     const fetchMyRecipes = async () => {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) return;
-      const { data } = await axios.get("http://localhost:5000/recipe");
+      const { data } = await axios.get(
+        "https://foodapp-08ud.onrender.com/recipe"
+      );
       const myRecipes = data.filter((recipe) => recipe.createdBy === user._id);
       console.log(data);
       setRecipes(data);
@@ -21,7 +23,7 @@ function MyRecipes() {
 
   const onDeleteRecipe = async (id) => {
     await axios
-      .delete(`http://localhost:5000/recipe/${id}`)
+      .delete(`https://foodapp-08ud.onrender.com/recipe/${id}`)
       .then((resp) => console.log(resp));
     setRecipes((prev) => prev.filter((r) => r._id !== id));
   };
@@ -36,7 +38,7 @@ function MyRecipes() {
             <div className="recipe-card" key={recipe._id}>
               <img
                 className="w-100"
-                src={`http://localhost:5000/public/images/${recipe.coverImage}`}
+                src={`https://foodapp-08ud.onrender.com/public/images/${recipe.coverImage}`}
                 alt={recipe.title}
               />
               <h4 className="mt-4">{recipe.title}</h4>

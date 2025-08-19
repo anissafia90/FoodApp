@@ -12,7 +12,10 @@ function InputForm() {
     // Handle form submission logic here
     let endPoint = isSignUp ? "register" : "signin";
     await axios
-      .post(`http://localhost:5000/user/${endPoint}`, { email, password })
+      .post(`https://foodapp-08ud.onrender.com/user/${endPoint}`, {
+        email,
+        password,
+      })
       .then((response) => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
